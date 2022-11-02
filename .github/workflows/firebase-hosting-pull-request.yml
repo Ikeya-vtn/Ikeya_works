@@ -8,11 +8,7 @@ jobs:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
     steps:
-       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with:
-          cache: true
-          channel: "stable"
+      - uses: actions/checkout@v2
 
       #ここから追記
 
@@ -30,12 +26,6 @@ jobs:
       -name: Download Flutter Packages
        run: flutter pub get
 
-       # -- ここまで追記部分！ -- #
-      # 解説:
-      #   ようは flutter build web をたたいても flutterがインストールされていないので動かないということ
-      #   インストールしてPATH通してパッケージダウンロードしているだけ。
-
-      # ビルド    
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
