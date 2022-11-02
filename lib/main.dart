@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -6,110 +8,177 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const JankenPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class JankenPage extends StatefulWidget {
+  const JankenPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<JankenPage> createState() => _JankenPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _JankenPageState extends State<JankenPage> {
+  /// 自分の手
+  String myHand = '✊';
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  /// コンピューターの手
+  String computerHand = '✊';
+
+  /// 勝敗を保持する変数
+  String result = '引き分け';
+
+  //勝負の回数
+  int gamecount = 0;
+
+  //勝った回数
+  int wincount = 0;
+
+  String winmessage = '';
+
+  // 関数の定義も、State の {} の中で行います。
+  void selectHand(String selectedHand) {
+    if (gamecount == 5) {
+      gamecount = 0;
+      wincount = 0;
+    }
+    winmessage = '';
+    myHand = selectedHand; // myHand に 引数として受けとった selectedHand を代入します。
+    print(myHand);
+    generateComputerHand(); // コンピューターの手を決める。
+    judge(); // 勝敗を判定する。
+    setState(() {});
+  }
+  // ※ 本当は selectHand という名前の関数の中にそれ以外の処理をたくさん詰め込むのはよくありません
+  // 解説の流れの都合上こうなってしまっていますが、できればもう一つ別の関数を用意してそこに処理をまとめるとよいでしょう。
+
+  /// コンピューターの手をランダムで生成
+  void generateComputerHand() {
+    // randomNumberに一時的に値を格納します。
+    final randomNumber = Random().nextInt(3);
+    // 生成されたランダムな数字を ✊, ✌️, 🖐 に変換して、コンピューターの手に代入します。
+    computerHand = randomNumberToHand(randomNumber);
+  }
+
+  /// ランダムで選んだ数字を絵文字に変換する
+  String randomNumberToHand(int randomNumber) {
+    // () のなかには条件となる値を書きます。
+    switch (randomNumber) {
+      case 0: // 入ってきた値がもし 0 だったら。
+        return '✊'; // ✊を返す。
+      case 1: // 入ってきた値がもし 1 だったら。
+        return '✌️'; // ✌️を返す。
+      case 2: // 入ってきた値がもし 2 だったら。
+        return '🖐'; // 🖐を返す。
+      default: // 上で書いてきた以外の値が入ってきたら。
+        return '✊'; // ✊を返す。（0, 1, 2 以外が入ることはないが念のため）
+    }
+  }
+
+  /// 勝敗を判定する関数
+  void judge() {
+    // 引き分けの場合
+    if (myHand == computerHand) {
+      result = '引き分け';
+      // 勝ちの場合
+
+    } else if (myHand == '✊' && computerHand == '✌️' ||
+        myHand == '✌️' && computerHand == '🖐' ||
+        myHand == '🖐' && computerHand == '✊') {
+      result = '勝ち';
+      wincount++; //勝った時にカウントする
+      // 負けの場合
+    } else {
+      result = '負け';
+    }
+    gamecount++;
+
+    if (gamecount == 5) {
+      winmessage = 'あなたは5回勝負して$wincount回勝ちました'; //５回勝負した時にwinmessageに代入
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('じゃんけん'),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+          children: [
+            //勝敗回数
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              winmessage,
+              style: const TextStyle(
+                fontSize: 25,
+              ),
+            ),
+
+            /// 勝敗
+            Text(
+              result,
+              style: const TextStyle(
+                fontSize: 32,
+              ),
+            ),
+            const SizedBox(height: 48),
+
+            /// コンピューターの手
+            Text(
+              computerHand,
+              style: const TextStyle(
+                fontSize: 32,
+              ),
+            ),
+            const SizedBox(height: 48),
+
+            /// 自分の手
+            Text(
+              myHand,
+              style: const TextStyle(
+                fontSize: 32,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            /// 出す手を選ぶためのボタン
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    selectHand('✊'); // 作った関数を呼び出すときはこのように書きます。
+                  },
+                  child: const Text('✊'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    selectHand('✌️'); // 作った関数を呼び出すときはこのように書きます。
+                  },
+                  child: const Text('✌️'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    selectHand('🖐'); // 作った関数を呼び出すときはこのように書きます。
+                  },
+                  child: const Text('🖐'),
+                ),
+              ],
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
